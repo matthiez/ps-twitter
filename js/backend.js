@@ -14,13 +14,13 @@ $(function () {
         },
         messages: {
             "config[SHMO_TWITTERTOOL_WIDGETID]": {
-                required: "You have specify an Widget ID."
+                required: "You to have specify an Widget ID."
             },
             "config[SHMO_TWITTERTOOL_USERNAME]": {
                 required: "You have to specify the Username belonging to the Widget ID."
             },
             "config[SHMO_TWITTERTOOL_TWEET_COUNT]": {
-                required: "Please enter a value between 1 and 20."
+                required: "The tweet count must be a number between 1 and 20."
             }
         }
     });
