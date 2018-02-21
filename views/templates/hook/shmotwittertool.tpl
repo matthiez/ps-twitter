@@ -10,7 +10,7 @@
         {if $shmotwttrtl.SHMO_TWITTERTOOL_BG_TRANSPARENCY}}transparent{/if}"
        style="
        {if $shmotwttrtl.SHMO_TWITTERTOOL_WIDGET_WIDTH}width:{$shmotwttrtl.SHMO_TWITTERTOOL_WIDGET_WIDTH}px;{/if}
-       {if $shmotwttrtl.SHMO_TWITTERTOOL_WIDGET_HEIGHT}width:{$shmotwttrtl.SHMO_TWITTERTOOL_WIDGET_HEIGHT}px;{/if}"
+       {if $shmotwttrtl.SHMO_TWITTERTOOL_WIDGET_HEIGHT}height:{$shmotwttrtl.SHMO_TWITTERTOOL_WIDGET_HEIGHT}px;{/if}"
             {if $shmotwttrtl.SHMO_TWITTERTOOL_TWEET_COUNT}data-tweet-limit="{$shmotwttrtl.SHMO_TWITTERTOOL_TWEET_COUNT}"{/if}
             {if $shmotwttrtl.SHMO_TWITTERTOOL_THEME}data-theme="dark"{else}data-theme="light"{/if}
             {if $shmotwttrtl.SHMO_TWITTERTOOL_LINK_COLOR}data-link-color="{$shmotwttrtl.SHMO_TWITTERTOOL_LINK_COLOR}"{/if}
