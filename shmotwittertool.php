@@ -27,22 +27,20 @@ class shmoTwitterTool extends Module
     ];
 
     public function __construct() {
+        parent::__construct();
         $this->name = 'shmotwittertool';
         $this->tab = 'front_office_features';
         $this->version = '1.0.0';
         $this->author = 'Andre Matthies';
         $this->need_instance = 0;
         $this->bootstrap = true;
-        parent::__construct();
         $this->displayName = $this->l('TwitterTool');
         $this->description = $this->l('Adds a block to display tweets in a timeline.');
         $this->confirmUninstall = $this->l('Are you sure you want to delete TwitterTool?');
     }
 
     public function install() {
-        if (Shop::isFeatureActive()) {
-            Shop::setContext(Shop::CONTEXT_ALL);
-        }
+        if (Shop::isFeatureActive()) Shop::setContext(Shop::CONTEXT_ALL);
         if (!parent::install()
             OR !$this->installConfig()
             OR !$this->registerHook('displayHeader')
@@ -58,44 +56,29 @@ class shmoTwitterTool extends Module
     }
 
     public function uninstall() {
-        if (!parent::uninstall()
-            OR !$this->removeConfig()) {
-            return false;
-        }
-        return true;
+        return !parent::uninstall() OR !$this->removeConfig() ? false : true;
     }
 
     private function installConfig() {
-        foreach ($this->config as $keyname => $value) {
-            Configuration::updateValue(strtoupper($keyname), $value);
-        }
+        foreach ($this->config as $keyname => $value) Configuration::updateValue(strtoupper($keyname), $value);
         return true;
     }
 
     private function removeConfig() {
-        foreach ($this->config as $keyname => $value) {
-            Configuration::deleteByName(strtoupper($keyname));
-        }
+        foreach ($this->config as $keyname => $value) Configuration::deleteByName(strtoupper($keyname));
         return true;
     }
 
     public function getConfig() {
-        $config_keys = array_keys($this->config);
-        return Configuration::getMultiple($config_keys);
+        return Configuration::getMultiple(array_keys($this->config));
     }
 
     public function getContent() {
         $output = null;
         if (Tools::isSubmit('submitshmotwittertool')) {
-            foreach (Tools::getValue('config') as $key => $value) {
-                Configuration::updateValue($key, $value);
-            }
-            if ($this->errors) {
-                $output .= $this->displayError(implode($this->errors, '<br/>'));
-            }
-            else {
-                $output .= $this->displayConfirmation($this->l('Settings updated'));
-            }
+            foreach (Tools::getValue('config') as $key => $value) Configuration::updateValue($key, $value);
+            if ($this->errors) $output .= $this->displayError(implode($this->errors, '<br/>'));
+            else $output .= $this->displayConfirmation($this->l('Settings updated'));
         }
         $vars = [];
         $vars['config'] = $this->getConfig();
@@ -351,8 +334,7 @@ class shmoTwitterTool extends Module
 
     public function hookDisplayLeftColumn() {
         $config = $this->getConfig();
-        if (!$config['SHMO_TWITTERTOOL_USERNAME'] || !$config['SHMO_TWITTERTOOL_WIDGETID'])
-            return false;
+        if (!$config['SHMO_TWITTERTOOL_USERNAME'] || !$config['SHMO_TWITTERTOOL_WIDGETID']) return false;
         $this->context->smarty->assign([
             'shmotwttrtl' => $config
         ]);
@@ -379,5 +361,4 @@ class shmoTwitterTool extends Module
         $this->context->controller->addJS('/js/jquery/plugins/jquery.validate.js');
         $this->context->controller->addJS(_MODULE_DIR_ . $this->name . '/js/backend.js');
     }
-
 }
