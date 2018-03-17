@@ -1,9 +1,18 @@
 <?php if (!defined('_PS_VERSION_')) exit;
 
+/**
+ * Class TwitterTool
+ */
 class TwitterTool extends Module
 {
+    /**
+     * @var array
+     */
     protected $errors = [];
 
+    /**
+     * @var array
+     */
     protected $config = [
         'TWITTERTOOL_USERNAME' => '',
         'TWITTERTOOL_TWEET_COUNT' => 3,
@@ -20,13 +29,16 @@ class TwitterTool extends Module
         'TWITTERTOOL_ASSERTIVE_POLITENESS' => 0,
     ];
 
+    /**
+     * TwitterTool constructor.
+     */
     public function __construct() {
         $this->name = 'twittertool';
         $this->tab = 'front_office_features';
-        $this->version = '1.1.0';
+        $this->version = '1.1.1';
         $this->author = 'Andre Matthies';
         $this->need_instance = 0;
-        $this->ps_versions_compliancy = ['min' => '1.5', 'max' => _PS_VERSION_];
+        $this->ps_versions_compliancy = [ 'min' => '1.5', 'max' => _PS_VERSION_ ];
         $this->bootstrap = true;
 
         parent::__construct();
@@ -35,6 +47,9 @@ class TwitterTool extends Module
         $this->description = $this->l('Adds a block to display tweets in a timeline.');
     }
 
+    /**
+     * @return bool
+     */
     public function install() {
         if (Shop::isFeatureActive()) Shop::setContext(Shop::CONTEXT_ALL);
         return parent::install()
@@ -44,24 +59,39 @@ class TwitterTool extends Module
         && $this->registerHook('displayFooter');
     }
 
+    /**
+     * @return bool
+     */
     public function uninstall() {
         return parent::uninstall() && $this->removeConfig();
     }
 
+    /**
+     * @return bool
+     */
     private function installConfig() {
         foreach ($this->config as $keyname => $value) Configuration::updateValue(strtoupper($keyname), $value);
         return true;
     }
 
+    /**
+     * @return bool
+     */
     private function removeConfig() {
         foreach ($this->config as $keyname => $value) Configuration::deleteByName(strtoupper($keyname));
         return true;
     }
 
+    /**
+     * @return mixed
+     */
     public function getConfig() {
         return Configuration::getMultiple(array_keys($this->config));
     }
 
+    /**
+     * @return string
+     */
     public function getContent() {
         $output = null;
         if (Tools::isSubmit('submittwittertool')) {
@@ -72,205 +102,11 @@ class TwitterTool extends Module
         return $output . $this->displayForm();
     }
 
+    /**
+     * @return mixed
+     */
     public function displayForm() {
-        $default_lang = (int)Configuration::get('PS_LANG_DEFAULT');
-        $twtfdForm[0]['form'] =  [
-            'legend' => [
-                'title' => $this->l('Settings'),
-            ],
-            'input' => [
-                [
-                    'type' => 'text',
-                    'name' => 'config[TWITTERTOOL_USERNAME]',
-                    'label' => $this->l('Twitter Username'),
-                    'hint' => 'The Twitter username you want to display tweets from.',
-                    'required' => true
-                ],
-                [
-                    'type' => 'text',
-                    'name' => 'config[TWITTERTOOL_TWEET_COUNT]',
-                    'label' => $this->l('Number of Tweets'),
-                    'hint' => 'Display a specific number of Tweets from 1 to 20.',
-                    'desc' => 'Will not have any effect when specifying a custom widget height.',
-                    'required' => false
-                ],
-                [
-                    'type' => 'text',
-                    'name' => 'config[TWITTERTOOL_WIDGET_WIDTH]',
-                    'label' => $this->l('Widget Width'),
-                    'hint' => 'Specify a custom widget width.',
-                    'suffix' => 'px',
-                    'required' => false
-                ],
-                [
-                    'type' => 'text',
-                    'name' => 'config[TWITTERTOOL_WIDGET_HEIGHT]',
-                    'label' => $this->l('Widget Height'),
-                    'hint' => 'Specify a custom widget height.',
-                    'desc' => 'Will not work if you change the default amount of tweets being shown.',
-                    'suffix' => 'px',
-                    'required' => false
-                ],
-                [
-                    'type' => 'switch',
-                    'name' => 'config[TWITTERTOOL_NO_HEADER]',
-                    'label' => $this->l('No Header'),
-                    'hint' => 'Hides the timeline header.',
-                    'is_bool' => true,
-                    'required' => false,
-                    'values' => [
-                        [
-                            'id' => 'header_off',
-                            'value' => 1,
-                            'label' => $this->l('Yes')
-                        ],
-                        [
-                            'id' => 'header_on',
-                            'value' => 0,
-                            'label' => $this->l('No')
-                        ]
-                    ]
-                ],
-                [
-                    'type' => 'switch',
-                    'name' => 'config[TWITTERTOOL_NO_FOOTER]',
-                    'label' => $this->l('No Footer'),
-                    'hint' => 'Hides the timeline footer and tweet composer link, if included in the timeline widget type.',
-                    'is_bool' => true,
-                    'required' => false,
-                    'values' => [
-                        [
-                            'id' => 'footer_off',
-                            'value' => 1,
-                            'label' => $this->l('Yes')
-                        ],
-                        [
-                            'id' => 'footer_on',
-                            'value' => 0,
-                            'label' => $this->l('No')
-                        ]
-                    ]
-                ],
-                [
-                    'type' => 'switch',
-                    'name' => 'config[TWITTERTOOL_NO_BORDERS]',
-                    'label' => $this->l('No Borders'),
-                    'hint' => 'Removes all borders within the widget including borders surrounding the widget area and separating tweets.',
-                    'is_bool' => true,
-                    'required' => false,
-                    'values' => [
-                        [
-                            'id' => 'borders_off',
-                            'value' => 1,
-                            'label' => $this->l('Yes')
-                        ],
-                        [
-                            'id' => 'borders_on',
-                            'value' => 0,
-                            'label' => $this->l('No')
-                        ]
-                    ]
-                ],
-                [
-                    'type' => 'switch',
-                    'name' => 'config[TWITTERTOOL_NO_SCROLLBAR]',
-                    'label' => $this->l('No Scrollbar'),
-                    'hint' => $this->l('Crops and hides the main timeline scrollbar, if visible. Can affect accessibility.'),
-                    'is_bool' => true,
-                    'required' => false,
-                    'values' => [
-                        [
-                            'id' => 'scrollbar_off',
-                            'value' => 1,
-                            'label' => $this->l('Yes')
-                        ],
-                        [
-                            'id' => 'scrollbar_on',
-                            'value' => 0,
-                            'label' => $this->l('No')
-                        ]
-                    ]
-                ],
-                [
-                    'type' => 'switch',
-                    'name' => 'config[TWITTERTOOL_BG_TRANSPARENCY]',
-                    'label' => $this->l('Transparent Background'),
-                    'hint' => $this->l('Removes the widget’s background color.'),
-                    'is_bool' => true,
-                    'required' => false,
-                    'values' => [
-                        [
-                            'id' => 'bg_transparency_on',
-                            'value' => 1,
-                            'label' => $this->l('Yes')
-                        ],
-                        [
-                            'id' => 'bg_transparency_off',
-                            'value' => 0,
-                            'label' => $this->l('No')
-                        ]
-                    ]
-                ],
-                [
-                    'type' => 'radio',
-                    'name' => 'config[TWITTERTOOL_THEME]',
-                    'label' => $this->l('Theme'),
-                    'required' => false,
-                    'values' => [
-                        [
-                            'id' => 'theme_light',
-                            'value' => 0,
-                            'label' => $this->l('Light')
-                        ],
-                        [
-                            'id' => 'theme_dark',
-                            'value' => 1,
-                            'label' => $this->l('Dark')
-                        ]
-                    ]
-                ],
-                [
-                    'type' => 'color',
-                    'name' => 'config[TWITTERTOOL_LINK_COLOR]',
-                    'label' => $this->l('Link Color'),
-                    'data-hex' => true,
-                    'class' => 'mColorPicker',
-                    'required' => 'false'
-                ],
-                [
-                    'type' => 'color',
-                    'name' => 'config[TWITTERTOOL_BORDER_COLOR]',
-                    'label' => $this->l('Border Color'),
-                    'data-hex' => true,
-                    'class' => 'mColorPicker',
-                    'required' => 'false'
-                ],
-                [
-                    'type' => 'switch',
-                    'name' => 'config[TWITTERTOOL_ASSERTIVE_POLITENESS]',
-                    'label' => $this->l('Assertive Politeness'),
-                    'hint' => $this->l('Set the embedded timeline live region politeness to assertive.'),
-                    'is_bool' => true,
-                    'required' => false,
-                    'values' => [
-                        [
-                            'id' => 'asservice_politeness_on',
-                            'value' => 1,
-                            'label' => $this->l('Yes')
-                        ],
-                        [
-                            'id' => 'asservice_politeness_off',
-                            'value' => 0,
-                            'label' => $this->l('No')
-                        ]
-                    ]
-                ],
-            ],
-            'submit' => [
-                'title' => $this->l('Save'),
-                'class' => 'btn btn-default pull-right'
-            ]
-        ];
+        $default_lang = Configuration::get('PS_LANG_DEFAULT');
         $helper = new HelperForm();
         $helper->module = $this;
         $helper->name_controller = $this->name;
@@ -307,7 +143,7 @@ class TwitterTool extends Module
         $helper->fields_value['config[TWITTERTOOL_LINK_COLOR]'] = Configuration::get('TWITTERTOOL_LINK_COLOR');
         $helper->fields_value['config[TWITTERTOOL_BORDER_COLOR]'] = Configuration::get('TWITTERTOOL_BORDER_COLOR');
         $helper->fields_value['config[TWITTERTOOL_ASSERTIVE_POLITENESS]'] = Configuration::get('TWITTERTOOL_ASSERTIVE_POLITENESS');
-        return $helper->generateForm([['form' => [
+        return $helper->generateForm([ [ 'form' => [
                 'legend' => [
                     'title' => $this->l('Settings'),
                 ],
@@ -503,35 +339,56 @@ class TwitterTool extends Module
                     'title' => $this->l('Save'),
                     'class' => 'btn btn-default pull-right'
                 ]
-            ]]]);
+            ] ] ]);
     }
 
+    /**
+     * @return mixed
+     */
     public function hookDisplayFooter() {
-        $config = $this->getConfig();
-        return $config['TWITTERTOOL_USERNAME'] && $this->context->smarty->assign($config) ? $this->display(__FILE__, 'twittertool.tpl') : false;
+        $this->context->smarty->assign($this->getConfig());
+        return $this->display(__FILE__, 'twittertool.tpl');
     }
 
+    /**
+     * @return mixed
+     */
     public function hookDisplayLeftColumn() {
         return $this->hookDisplayFooter();
     }
 
+    /**
+     * @return mixed
+     */
     public function hookDisplayRightColumn() {
         return $this->hookDisplayFooter();
     }
 
+    /**
+     * @return mixed
+     */
     public function hookDisplayTop() {
         return $this->hookDisplayFooter();
     }
 
+    /**
+     * @return mixed
+     */
     public function hookDisplayHome() {
         return $this->hookDisplayFooter();
     }
 
+    /**
+     *
+     */
     public function hookActionAdminControllerSetMedia() {
         $this->context->controller->addJqueryPlugin('validate');
         $this->context->controller->addJS(_MODULE_DIR_ . $this->name . '/views/js/backend.js');
     }
 
+    /**
+     *
+     */
     public function hookActionFrontControllerSetMedia() {
         $this->context->controller->addJS(_MODULE_DIR_ . $this->name . '/views/js/frontend.js');
     }
