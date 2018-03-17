@@ -33,7 +33,6 @@ class TwitterTool extends Module
 
         $this->displayName = $this->l('TwitterTool');
         $this->description = $this->l('Adds a block to display tweets in a timeline.');
-        $this->confirmUninstall = $this->l('Are you sure you want to delete TwitterTool?');
     }
 
     public function install() {
