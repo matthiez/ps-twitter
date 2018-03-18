@@ -97,7 +97,7 @@ class TwitterTool extends Module
     public function getContent() {
         require_once $this->__moduleDir . '/backendhelperform.php';
         $output = null;
-        if (Tools::isSubmit('submittwittertool')) {
+        if (Tools::isSubmit('submit' . $this->name)) {
             foreach (Tools::getValue('config') as $k => $v) Configuration::updateValue($k, $v);
             if ($this->errors) $output .= $this->displayError(implode($this->errors, '<br/>'));
             else $output .= $this->displayConfirmation($this->l('Settings updated'));
