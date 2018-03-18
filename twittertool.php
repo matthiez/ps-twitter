@@ -54,9 +54,9 @@ class TwitterTool extends Module
      */
     public function install() {
         if (Shop::isFeatureActive()) Shop::setContext(Shop::CONTEXT_ALL);
-        return parent::install()
-        && $this->installConfig()
-        && $this->registerHook('actionAdminControllerSetMedia')
+        if (!parent::install()) return false;
+        foreach ($this->config as $k => $v) Configuration::updateValue($k, $v);
+        return $this->registerHook('actionAdminControllerSetMedia')
         && $this->registerHook('actionFrontControllerSetMedia')
         && $this->registerHook('displayFooter');
     }
@@ -65,30 +65,9 @@ class TwitterTool extends Module
      * @return bool
      */
     public function uninstall() {
-        return parent::uninstall() && $this->removeConfig();
-    }
-
-    /**
-     * @return bool
-     */
-    private function installConfig() {
-        foreach ($this->config as $k => $v) Configuration::updateValue(strtoupper($k), $v);
+        parent::uninstall();
+        foreach ($this->config as $k) Configuration::deleteByName($k);
         return true;
-    }
-
-    /**
-     * @return bool
-     */
-    private function removeConfig() {
-        foreach ($this->config as $k => $v) Configuration::deleteByName($k);
-        return true;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getConfig() {
-        return Configuration::getMultiple(array_keys($this->config));
     }
 
     /**
@@ -99,7 +78,7 @@ class TwitterTool extends Module
         $output = null;
         if (Tools::isSubmit('submit' . $this->name)) {
             foreach (Tools::getValue('config') as $k => $v) Configuration::updateValue($k, $v);
-            if ($this->errors) $output .= $this->displayError(implode($this->errors, '<br/>'));
+            if ($this->errors) $output .= $this->displayError(implode($this->errors, '<br>'));
             else $output .= $this->displayConfirmation($this->l('Settings updated'));
         }
         return $output . (new BackendHelperForm($this->name))->generate();
@@ -109,8 +88,8 @@ class TwitterTool extends Module
      * @return mixed
      */
     public function hookDisplayFooter() {
-        $this->context->smarty->assign($this->getConfig());
-        return $this->display(__FILE__, 'twittertool.tpl');
+        $this->context->smarty->assign(Configuration::getMultiple(array_keys($this->config)));
+        return $this->display(__FILE__, "$this->name.tpl");
     }
 
     /**
